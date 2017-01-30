@@ -12,6 +12,10 @@
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     sql
+     html
+     javascript
+     yaml
      ;; ----------------------------------------------------------------
      ;; Uncomment some layer names and press <SPC f e R> (Vim style)
      ;; ----------------------------------------------------------------
@@ -24,13 +28,16 @@
      markdown
      org
      git
-     ;; shell
+     nix-mode
      ruby
+     python
      ipython-notebook
      syntax-checking
      scala
      elm
      haskell
+     ;; intero
+     rust
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -40,9 +47,12 @@
    '(
      ag
      slim-mode
+     js2-mode
+     persistent-scratch
      xclip
-     intero
      restclient
+     dockerfile-mode
+     scss-mode
    )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
@@ -73,21 +83,22 @@ before layers configuration."
    dotspacemacs-startup-banner 'official
    ;; List of items to show in the startup buffer. If nil it is disabled.
    ;; Possible values are: `recents' `bookmarks' `projects'."
-   dotspacemacs-startup-lists '(recents projects)
+   dotspacemacs-startup-lists '(recents projects bookmarks)
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list
    dotspacemacs-themes '(sanityinc-solarized-dark
                          solarized-light
-                         material
-                         leuven
-                         solarized-dark
-                         monokai)
+                         ;; material
+                         ;; leuven
+                         ;; solarized-dark
+                         ;; monokai
+                         )
    ;; If non nil the cursor color matches the state color.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 18
+                               :size 16
                                :weight normal
                                :width normal
                                :powerline-scale 1.2)
@@ -117,13 +128,13 @@ before layers configuration."
    ;; If non nil a progress bar is displayed when spacemacs is loading. This
    ;; may increase the boot time on some systems and emacs builds, set it to
    ;; nil ;; to boost the loading time.
-   dotspacemacs-loading-progress-bar t
+   dotspacemacs-loading-progress-bar nil
    ;; If non nil the frame is fullscreen when Emacs starts up.
    ;; (Emacs 24.4+ only)
-   dotspacemacs-fullscreen-at-startup nil
+   dotspacemacs-fullscreen-at-startup t
    ;; If non nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
    ;; Use to disable fullscreen animations in OSX."
-   dotspacemacs-fullscreen-use-non-native nil
+   dotspacemacs-fullscreen-use-non-native t
    ;; If non nil the frame is maximized when Emacs starts up.
    ;; Takes effect only if `dotspacemacs-fullscreen-at-startup' is nil.
    ;; (Emacs 24.4+ only)
@@ -131,11 +142,11 @@ before layers configuration."
    ;; A value from the range (0..100), in increasing opacity, which describes
    ;; the transparency level of a frame when it's active or selected.
    ;; Transparency can be toggled through `toggle-transparency'.
-   dotspacemacs-active-transparency 90
+   dotspacemacs-active-transparency 95
    ;; A value from the range (0..100), in increasing opacity, which describes
    ;; the transparency level of a frame when it's inactive or deselected.
    ;; Transparency can be toggled through `toggle-transparency'.
-   dotspacemacs-inactive-transparency 90
+   dotspacemacs-inactive-transparency 80
    ;; If non nil unicode symbols are displayed in the mode line.
    dotspacemacs-mode-line-unicode-symbols t
    ;; If non nil smooth scrolling (native-scrolling) is enabled. Smooth
@@ -151,7 +162,7 @@ before layers configuration."
    dotspacemacs-persistent-server nil
    ;; List of search tool executable names. Spacemacs uses the first installed
    ;; tool of the list. Supported tools are `ag', `pt', `ack' and `grep'.
-   dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
+   dotspacemacs-search-tools '("ag" "ack" "grep")
    ;; The default package repository used if no explicit repository has been
    ;; specified with an installed package.
    ;; Not used for now.
@@ -164,7 +175,11 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
+  ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+  (add-to-list 'exec-path "~/.local/bin/")
   ;; movement
+  (define-key evil-normal-state-map (kbd "SPC x a a") 'align-regexp)
+  (define-key evil-normal-state-map (kbd "SPC x a A") 'align)
   (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
   (define-key evil-normal-state-map (kbd "SPC , a") 'projectile-ag)
   (define-key evil-normal-state-map (kbd "SPC , d") 'dired)
@@ -172,18 +187,26 @@ layers configuration."
   (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
   (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
   (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
+  (define-key evil-normal-state-map (kbd "SPC o b") 'helm-buffers-list)
   ;; haskell
   (define-key evil-normal-state-map (kbd "SPC g n") 'ghc-goto-next-error)
   (define-key evil-normal-state-map (kbd "SPC g p") 'ghc-goto-prev-error)
-  ;; rspec
+  (define-key evil-normal-state-map (kbd "SPC h h") 'haskell-hoogle)
+  (define-key evil-normal-state-map (kbd "SPC , h m") 'haskell-mode)
+  ;; testing
   (define-key evil-normal-state-map (kbd "SPC r a") 'rspec-verify)
   (define-key evil-normal-state-map (kbd "SPC r s") 'rspec-verify-single)
+  (define-key evil-normal-state-map (kbd "SPC r l") 'resume-last-search-buffer)
   ;; macros
   (define-key evil-normal-state-map (kbd "SPC , q s") 'kmacro-start-macro)
   (define-key evil-normal-state-map (kbd "SPC , q e") 'kmacro-end-macro)
   (define-key evil-normal-state-map (kbd "SPC , q p") 'kmacro-end-and-call-macro)
+  ;; bookmarks
+  (define-key evil-normal-state-map (kbd "SPC , b j") 'bookmark-jump)
+  (define-key evil-normal-state-map (kbd "SPC , b s") 'bookmark-set)
   ;; misc
-  (setq x-select-enable-clipboard t)
+  ;; (setq x-select-enable-clipboard t)
+  ;; (setq tags-revert-without-query 1)
 )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -193,6 +216,8 @@ layers configuration."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(glasses-separate-capital-groups nil)
+ '(glasses-uncapitalize-p t)
  '(send-mail-function (quote mailclient-send-it)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
